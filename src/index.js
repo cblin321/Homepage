@@ -1,5 +1,7 @@
-const test = document.createElement("p")
+const nav = document.createElement("nav")
 
-test.textContent = "fdsf"
+const intro = document.createElement("section")
 
-document.body.appendChild(test)
+const port = document.createElement("section")
+
+const contact = document.createElement("section")
