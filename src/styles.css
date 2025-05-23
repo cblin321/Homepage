@@ -1,0 +1,11 @@
+.hero-container {
+    display: flex;
+    flex-direction: row;
+
+}
+
+.hero-img {
+    height: 40vh;
+    width: 20vw;
+    object-fit: contain;
+}

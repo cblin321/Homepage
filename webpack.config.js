@@ -4,13 +4,39 @@ const webpack = require("webpack")
 
 module.exports = {
     mode: "development",
-    entry: "./src/index.js",
+    entry: "./src/index.mjs",
     output: {
-        filename: "main.js",
+        filename: "main.mjs",
         path: path.resolve(__dirname, "dist"),
         clean: true
     },
+      resolve: {
+    extensions: ['.ts', '.js', '.json'],
+  },
+    module: {
+        rules: [
+            // {
+            //     test: /\.js$/,
+            //     exclude: /node_modules/,
+            //     // use: "babel-loader"
+            //     use: {
+            //         loader: "babel-loader",
+            //         options: {
+            //             presets: ["@babel/preset-env"],
+            //             sourceType: "unambiguous"
+            //         }
+            //     }
+            // },
 
+            {
+                test: /\.css$/,
+                use: [
+                    "style-loader",
+                    "css-loader"
+                ]
+            },
+        ],
+    },
     plugins: [
         new HtmlWebpackPlugin({
             template: "src/index.html"
