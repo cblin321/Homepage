@@ -59,7 +59,7 @@ function heroSection() {
     // const info = new ParticleInfo([0, 0], [5, -9.8], 0, [0, 0])
     //TODO allow the user to change this
     const coefOfRest = 1
-    const PARTCILE_RADIUS = 25
+    const PARTCILE_RADIUS = 250
     const sprites = []
 
     const info = []
@@ -112,6 +112,8 @@ function resolveCollision(spriteInfoA, spriteInfoB) {
 
     const velAFinal = normalVec.clone().multiplyScalar(vAnf).add(tanVec.clone().multiplyScalar(vAt))
     const velBFinal = normalVec.clone().multiplyScalar(vBnf).add(tanVec.clone().multiplyScalar(vBt))
+    console.log(velA)
+    console.log(velAFinal)
 
     return [velAFinal, velBFinal]
 }
@@ -140,7 +142,6 @@ function checkCollision(spriteA, spriteB) {
                     // console.log(checkCollision(sprites[i], sprites[j]))
                     // console.log(sprites[i], sprites[j])
                 if (checkCollision(sprites[i], sprites[j])) {
-                    console.log("collid")
                     const [finalA, finalB] = resolveCollision(spriteInfoA, spriteInfoB)
                     spriteInfoA.vel = [finalA.x, finalA.y]
                     spriteInfoB.vel = [finalB.x, finalB.y]
