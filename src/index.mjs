@@ -59,20 +59,20 @@ function heroSection() {
     // const info = new ParticleInfo([0, 0], [5, -9.8], 0, [0, 0])
     //TODO allow the user to change this
     const coefOfRest = 1
-    const PARTCILE_RADIUS = 50
+    const PARTCILE_RADIUS = 25
     const sprites = []
 
     const info = []
-    const numSprites = 9
+    const numSprites = 2
 
     for (let i = 0; i < numSprites; i++) {
         const sprite = new THREE.Sprite()
-        sprite.position.set(i * (PARTCILE_RADIUS + 2), 0, 1)
+        sprite.position.set(i * (PARTCILE_RADIUS + 100), 0, 1)
         sprites.push(sprite)
 
         //TODO change mass from constant
-        const position = new THREE.Vector2(i * (PARTCILE_RADIUS + 2), 0)
-        const spriteInfo = new ParticleInfo(position, [0, -9.8], 0, [50, 0], 1)
+        const position = new THREE.Vector2(i * (PARTCILE_RADIUS + 100), 0)
+        const spriteInfo = new ParticleInfo(position, [0, -9.8], 0, [50 * (i + 1), 0], 1)
         info.push(spriteInfo)
 
         sprite.scale.set(PARTCILE_RADIUS, PARTCILE_RADIUS, 1)
@@ -85,37 +85,8 @@ function heroSection() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
 
-function resolveCollision(spriteIdxA, spriteIdxB, toi) {
-        const spriteA = sprites[spriteIdxA]
-        const spriteInfoA = info[spriteIdxA]
-
-        const spriteB = sprites[spriteIdxB]
-        const spriteInfoB = info[spriteIdxB]
-        if (toi > 0) {
-            //TODO move to the point of impact
-            if (spriteA.position.x - PARTCILE_RADIUS < bounds.left || spriteA.position.x + PARTCILE_RADIUS > bounds.right) {
-                spriteInfoA.vel[0] *= -1
-            }
-            if (spriteB.position.x - PARTCILE_RADIUS < bounds.left || spriteB.position.x + PARTCILE_RADIUS > bounds.right) {
-                spriteInfoB.vel[0] *= -1
-            }
-
-            if (spriteA.position.y - PARTCILE_RADIUS < bounds.top || spriteA.position.y + PARTCILE_RADIUS > bounds.bottom) {
-                spriteInfoA.vel[1] *= -1
-            }
-            if (spriteB.position.y - PARTCILE_RADIUS < bounds.top || spriteB.position.y + PARTCILE_RADIUS > bounds.bottom) {
-                spriteInfoB.vel[1] *= -1
-            }
-
-
-            const time = clock.getElapsedTime()
-            const [dx, dy] = spriteInfo.updateVelocity(time)
-            sprite.translateX(dx)
-            sprite.translateY(dy)
-
-            spriteInfo.pos = new THREE.Vector2(sprite.position.x, sprite.position.y)
-
-        }
+    let count = 0
+function resolveCollision(spriteInfoA, spriteInfoB) {
     const normalVec = spriteInfoA.pos.clone().sub(spriteInfoB.pos.clone()).normalize()
 
     const tanVec = new THREE.Vector2(-normalVec.y, normalVec.x)
@@ -145,57 +116,16 @@ function resolveCollision(spriteIdxA, spriteIdxB, toi) {
     return [velAFinal, velBFinal]
 }
 
-function checkCollision(spriteInfoA, spriteInfoB) {
-    //check whether a collision will happen between frames
-    //need position, find time
-    const deltaTime = clock.getDelta()
-    const velA = new THREE.Vector2(spriteInfoA.vel[0], spriteInfoA.vel[1])
-    const accA = new THREE.Vector2(spriteInfoA.acc[0], spriteInfoA.acc[1])
+function checkCollision(spriteA, spriteB) {
+    const ax = spriteA.position.x;
+    const ay = spriteA.position.y;
+    const bx = spriteB.position.x;
+    const by = spriteB.position.y;
 
-    const velB = new THREE.Vector2(spriteInfoB.vel[0], spriteInfoB.vel[1])
-    const accB = new THREE.Vector2(spriteInfoB.acc[0], spriteInfoB.acc[1])
-    const toi = solveTOIWithAcceleration(spriteInfoA.pos, velA, accA, PARTCILE_RADIUS,
-        spriteInfoB.pos, velB, accB, PARTCILE_RADIUS
-    )
+    const dx = Math.abs(ax - bx);
+    const dy = Math.abs(ay - by);
 
-    return toi
-}
-function solveTOIWithAcceleration(posA, velA, accA, radiusA, posB, velB, accB, radiusB) {
-    const r0 = posA.clone().sub(posB);
-    const v = velA.clone().sub(velB);
-    const a = accA.clone().sub(accB);
-
-    const R = radiusA + radiusB;
-    const R2 = R * R;
-
-    // Coefficients for quartic: (r0 + v t + 0.5 a t^2)^2 = R^2
-    // Expand (r0 + v t + 0.5 a t^2)·(r0 + v t + 0.5 a t^2) - R^2 = 0
-
-    const A = 0.25 * a.dot(a);
-    const B = a.dot(v);
-    const C = v.dot(v) + a.dot(r0);
-    const D = 2 * v.dot(r0);
-    const E = r0.dot(r0) - R2;
-
-    // Solve quartic: A t^4 + B t^3 + C t^2 + D t + E = 0
-
-    // Using a numeric root solver (Newton, Durand-Kerner, or library) is easiest,
-    // but here we use a simple numeric approach: sample t from 0 to 1 with small steps.
-
-    const roots = [];
-
-    const step = 0.001;
-    for (let t = 0; t <= 1; t += step) {
-        const val = ((A * t + B) * t + C) * t * t + D * t + E;
-        if (Math.abs(val) < 1e-6) roots.push(t);
-    }
-
-    if (roots.length === 0) return null;
-
-    // Return the smallest positive root in [0,1]
-    const toi = Math.min(...roots.filter(t => t >= 0 && t <= 1));
-
-    return toi || null;
+    return dx < PARTCILE_RADIUS && dy < PARTCILE_RADIUS;
 }
 
     function findCollisions() {
@@ -210,21 +140,7 @@ function solveTOIWithAcceleration(posA, velA, accA, radiusA, posB, velB, accB, r
                     // console.log(checkCollision(sprites[i], sprites[j]))
                     // console.log(sprites[i], sprites[j])
                 if (checkCollision(sprites[i], sprites[j])) {
-                    console.log("collide")
-                    // const delta = spriteInfoA.pos.clone().sub(spriteInfoB.pos)
-                    // const dist = delta.length()
-                    // const overlap = PARTCILE_RADIUS * 2 - dist
-                    // if (overlap > 0) {
-                    //     const correction = delta.normalize().multiplyScalar(overlap / 2)
-                    //     spriteInfoA.pos.add(correction)
-                    //     spriteInfoB.pos.sub(correction)
-
-                    //     sprites[i].position.setX(spriteInfoA.pos.x)
-                    //     sprites[i].position.setY(spriteInfoA.pos.y)
-
-                    //     sprites[j].position.setX(spriteInfoB.pos.x)
-                    //     sprites[j].position.setY(spriteInfoB.pos.y)
-                    // }
+                    console.log("collid")
                     const [finalA, finalB] = resolveCollision(spriteInfoA, spriteInfoB)
                     spriteInfoA.vel = [finalA.x, finalA.y]
                     spriteInfoB.vel = [finalB.x, finalB.y]
@@ -247,12 +163,10 @@ function solveTOIWithAcceleration(posA, velA, accA, radiusA, posB, velB, accB, r
             }
 
             const time = clock.getElapsedTime()
-            const [dx, dy] = spriteInfo.updateVelocity(time)
+            const [dx, dy] = spriteInfo.updatePosition(time)
             sprite.translateX(dx)
             sprite.translateY(dy)
-
             spriteInfo.pos = new THREE.Vector2(sprite.position.x, sprite.position.y)
-
         }
     }
 
@@ -263,7 +177,6 @@ function solveTOIWithAcceleration(posA, velA, accA, radiusA, posB, velB, accB, r
     }
 
     renderer.setAnimationLoop(animate)
-
 
 
 
