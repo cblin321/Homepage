@@ -1,3 +1,18 @@
+@font-face {
+  font-family: "jost";
+  src: url("./fonts/Jost-VariableFont_wght.ttf") format('woff2');
+}
+
+:root {
+    --hero-heading-size: 6em;
+    --hero-subheading-size: calc(.4 * var(--hero-heading-size));
+    --highlight: RGBA(244, 244, 244, .61);
+    --highlight-background: RGBA(244, 244, 244, .21);
+    --proj-img-ratio: 16/9;
+    --section-header-size: 4em;
+    --font-color: #f1f1f1;
+    --highlight: #c0c0e6;
+}
 .hero-img {
     width: 20vw;
     object-fit: contain;
@@ -10,24 +25,284 @@
     flex-direction: row;
     justify-content: space-between;
    height: 100vh;
+    /* animation: float ease-in-out 3s infinite alternate; */
 }
 
 #hero > * {
     padding: 50px;
 }
 
+html {
+    /* scroll-snap-type: y proximity; broken on chromium :( */
+    scroll-padding-top: 1px;
+}
+
 body {
+    font-weight: 400;
     padding: 0;
+    margin: 0;
+    background-image: linear-gradient(120deg, #0f0f12 0vh, #131316 100vh);
+    background-position: 50%;
+    background-attachment: fixed;
+    color: var(--font-color);
+    font-family: "jost";
+    /* overflow-y: scroll; */
+    display: flex;
+    flex-direction: column;
+}
+
+.icon {
+    fill: var(--font-color);
+}
+
+p {
     margin: 0;
 }
 
 nav {
-    position: fixed; 
-    top: 0;
+    font-family: "jost";
+    /* position: fixed;  */
+    /* top: 0; */
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
+    align-items: center;
+    /* padding-left: 25vw;
+    padding-right: 25vw;
     width: 50vw;
-    left: 25vw;
+    height: 50px; */
+    /* left: 25vw; */
+    background-color: var(--highlight);
+
 }
 
+
+#portfolio {
+    padding: 20px 200px 0;
+    flex-grow: 1;
+    /* padding-left: 200px;
+    padding-right: 200px; */
+}
+
+.animation-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+    scroll-snap-align: none;
+}
+
+#hero, #about, #portfolio {
+    height: 100vh;
+}
+
+section {
+    scroll-snap-align: start;
+    scroll-padding: 1px;
+    /* scroll-snap-stop: always; */
+}
+
+.animation-container > .section-header {
+    font-size: var(--section-header-size);
+    scroll-snap-align: none;
+    margin: 0;
+}
+
+.personal-container {
+    display: grid;
+    /* grid-template-rows: repeat(2, 1fr); */
+    gap: 10px;
+    align-items: center;
+    align-content: center;
+    grid-template-rows: var(--hero-heading-size) var(--hero-subheading-size);
+    grid-template-columns: repeat(3, calc(1.1 * var(--hero-subheading-size))) 1fr;
+    grid-template-areas: 
+    "name name name name"
+    "icon icon icon subheading";
+    /* animation: float ease-in-out 3s infinite alternate; */
+}
+
+.icon-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    grid-area: icon;
+    height: 100%;
+}
+
+.icon-container > a {
+    width: calc(.8 * var(--hero-subheading-size));
+    display: flex;
+}
+
+.personal-container > p {
+    margin: 0;
+}
+
+.name {
+    grid-area: name;
+    font-size: var(--hero-heading-size);
+}
+
+.hero-subtitle {
+    grid-area: subheading;
+    font-size: var(--hero-subheading-size);
+}
+
+.port-projects {
+    /* padding: 200px; */
+    font-weight: 250;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    justify-content: center;
+    gap: 50px;
+    scroll-snap-align: none;
+}
+
+.proj-name {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.proj-container {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    transition: box-shadow, transform .2s ease-out;
+    scroll-snap-align: none;
+}
+
+.proj-container:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 80px -10px var(--highlight);
+}
+
+.proj-info-container {
+    padding: 20px;
+    /* background-color: #3a3a3d; */
+    /* background-color:#040404; */
+    background: linear-gradient(120deg, #8e8eab, #8e9aab);
+
+    /* background: linear-gradient(120deg,#c0c0e6, #c0e0e6); */
+
+    flex-grow: 1;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.proj-img {
+    /* object-fit: contain; */
+    object-fit: cover;
+    /* width: 100%; */
+    aspect-ratio: var(--proj-img-ratio);
+    /* width: minmax(300px, 1fr); */
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    /* max-height: 50%; */
+}
+
+#contact {
+    /* background-color: var(--highlight-background); */
+    background-color:#040404;
+    /* background: linear-gradient(120deg, #8e8eab, #8e9aab); */
+    padding: 5% 10%;
+    display: flex;
+    justify-content: center;
+    gap: 10%;
+}
+
+.contact-container {
+    display: flex;
+    align-items: center;
+    gap: .4em;
+}
+
+.contact-container > a > .icon {
+    width: 1em;
+}
+
+.contact-container > p {
+    order: 2;
+}
+
+.info-container > h2 {
+    margin: 0 0 .5rem;
+}
+
+.info-container > h3 {
+    margin: 0 0 1rem;
+}
+
+.info-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 20rem;
+}
+
+@media (max-width: 1500px) {
+    #portfolio {
+        box-sizing: border-box;
+        height: auto;
+        margin-bottom: 30vh;
+        padding-bottom: 20px;
+    }
+}
+@media (max-width: 1100px) {
+    .personal-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        order: 2;
+    }
+
+    .icon-container {
+        width: 150px;
+        order: 1;
+    }
+
+    .name {
+        font-size: calc(.8 * var(--hero-heading-size));
+        text-align: center;
+    }
+
+    .hero-subtitle {
+        font-size: calc(.8 * var(--hero-subheading-size));
+        padding: 0;
+        text-align: center;
+
+    }
+
+    #hero {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .hero-img {
+        width: 80%;
+        order: 1;
+    }
+
+    .animation-container > .section-header {
+        font-size: calc(.8 * var(--section-header-size))
+    }
+
+    #portfolio {
+        padding: 20px 50px;
+    }
+}

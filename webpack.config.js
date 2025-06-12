@@ -28,12 +28,16 @@ module.exports = {
             //     }
             // },
             {
-                test: /\.(jpe?g|png|gif|svg)$/i, 
-                loader: "file-loader",
-                options: {
-                    name: "./[name].[ext]"
-                }
+                test: /\.(woff(2)?|ttf|eot|svg|jpg|png)(\?v=\d+\.\d+\.\d+)?$/,
+                type: "asset/resource"
             },
+            // {
+            //     test: /\.(jpe?g|png|gif|svg)$/i, 
+            //     loader: "file-loader",
+            //     options: {
+            //         name: "./[name].[ext]"
+            //     }
+            // },
 
             {
                 test: /\.css$/,

@@ -1,8 +1,15 @@
-import "./styles.css";
-import ParticleInfo from "./Particle.mjs";
+import gsap from "gsap"
+import ScrollTrigger from "gsap/ScrollTrigger.js"
+import "./styles.css"
+import ParticleInfo from "./Particle.mjs"
 import circle from "./circle.png"
 import * as THREE from "three"
-// import hi from "./stuff.js"
+import envelope_icon from "./icons/envelope-solid.svg"
+import github_icon from "./icons/github-brands.svg"
+import linkedin_icon from "./icons/linkedin-brands.svg"
+import addr_icon from "./icons/address-book-solid.svg"
+import phone_icon from "./icons/phone-solid.svg"
+import inbox_icon from "./icons/inbox-solid.svg"
 const page = document.createElement("div")
 
 
@@ -27,6 +34,24 @@ function navBar() {
 
 const nav = navBar()
 
+
+const AppendSVGDOM = (url, parent, href) => {
+    fetch(url).then(resp => resp.text()).then(resp => {
+            const parser = new DOMParser()
+            const svg = parser.parseFromString(resp, "text/html").body.firstElementChild
+            svg.classList.add("icon")
+            if (href !== null && href !== undefined) {
+                const link = document.createElement("a")
+                link.href = href
+                link.appendChild(svg)
+                parent.appendChild(link)
+                return
+            }
+            parent.appendChild(svg)
+        }
+    )
+}
+
 function heroSection() {
     const hero_container = document.createElement("section")
     hero_container.id = "hero"
@@ -37,12 +62,26 @@ function heroSection() {
 
     const hero_text = document.createElement("p") 
     hero_text.textContent = "Full-Stack Development"
+    hero_text.classList.add("hero-subtitle")
 
     const name = document.createElement("p")
+    name.classList.add("name")
     name.textContent = "Christopher Lin"
 
     const personal = document.createElement("div")
     personal.classList.add("personal-container")
+
+    const icon_container = document.createElement("div")
+    icon_container.classList.add("icon-container")
+
+
+    AppendSVGDOM(envelope_icon, icon_container, "#contact")
+    AppendSVGDOM(github_icon, icon_container, "")
+    AppendSVGDOM(linkedin_icon, icon_container, "")
+
+    personal.appendChild(icon_container)
+
+    animateScroll([personal, hero_img])
 
     const aspectRatio = window.innerWidth / window.innerHeight
     const viewSize = 500
@@ -59,7 +98,7 @@ function heroSection() {
     // const info = new ParticleInfo([0, 0], [5, -9.8], 0, [0, 0])
     //TODO allow the user to change this
     const coefOfRest = 1
-    const PARTCILE_RADIUS = 250
+    const PARTCILE_RADIUS = 250 
     const sprites = []
 
     const info = []
@@ -67,12 +106,12 @@ function heroSection() {
 
     for (let i = 0; i < numSprites; i++) {
         const sprite = new THREE.Sprite()
-        sprite.position.set(i * (PARTCILE_RADIUS + 100), 0, 1)
+        sprite.position.set(i * (PARTCILE_RADIUS + 10), 0, 1)
         sprites.push(sprite)
 
         //TODO change mass from constant
         const position = new THREE.Vector2(i * (PARTCILE_RADIUS + 100), 0)
-        const spriteInfo = new ParticleInfo(position, [0, -9.8], 0, [50 * (i + 1), 0], 1)
+        const spriteInfo = new ParticleInfo(position, [0, 0], 0, [0, 50], PARTCILE_RADIUS)
         info.push(spriteInfo)
 
         sprite.scale.set(PARTCILE_RADIUS, PARTCILE_RADIUS, 1)
@@ -83,99 +122,36 @@ function heroSection() {
     const clock = new THREE.Clock()
     // renderer.setClearColor(0xffffff)
     renderer.setSize(window.innerWidth, window.innerHeight)
-    document.body.appendChild(renderer.domElement)
-
-    let count = 0
-function resolveCollision(spriteInfoA, spriteInfoB) {
-    const normalVec = spriteInfoA.pos.clone().sub(spriteInfoB.pos.clone()).normalize()
-
-    const tanVec = new THREE.Vector2(-normalVec.y, normalVec.x)
-
-    const velA = new THREE.Vector2(spriteInfoA.vel[0], spriteInfoA.vel[1])
-
-    const velB = new THREE.Vector2(spriteInfoB.vel[0], spriteInfoB.vel[1])
-
-
-
-    const vAn = normalVec.clone().dot(velA)
-    const vBn = normalVec.clone().dot(velB)
-
-    
-    const vAt = tanVec.clone().dot(velA)
-    const vBt = tanVec.clone().dot(velB)
-
-     
-    //compute new velocity in normal direction
-    const vAnf = (vAn * (spriteInfoA.mass - spriteInfoB.mass) + 2 * spriteInfoB.mass * vBn) / (spriteInfoA.mass + spriteInfoB.mass)
-    const vBnf = (vBn * (spriteInfoB.mass - spriteInfoA.mass) + 2 * spriteInfoA.mass * vAn) / (spriteInfoA.mass + spriteInfoB.mass)
-
-
-    const velAFinal = normalVec.clone().multiplyScalar(vAnf).add(tanVec.clone().multiplyScalar(vAt))
-    const velBFinal = normalVec.clone().multiplyScalar(vBnf).add(tanVec.clone().multiplyScalar(vBt))
-    console.log(velA)
-    console.log(velAFinal)
-
-    return [velAFinal, velBFinal]
-}
-
-function checkCollision(spriteA, spriteB) {
-    const ax = spriteA.position.x;
-    const ay = spriteA.position.y;
-    const bx = spriteB.position.x;
-    const by = spriteB.position.y;
-
-    const dx = Math.abs(ax - bx);
-    const dy = Math.abs(ay - by);
-
-    return dx < PARTCILE_RADIUS && dy < PARTCILE_RADIUS;
-}
-
-    function findCollisions() {
-        for (let i = 0; i < sprites.length; i++)  {
-
-            for (let j = 0; j < sprites.length; j++)  {
-                if (i === j)
-                    continue                    
-
-                const spriteInfoA = info[i]
-                const spriteInfoB = info[j]
-                    // console.log(checkCollision(sprites[i], sprites[j]))
-                    // console.log(sprites[i], sprites[j])
-                if (checkCollision(sprites[i], sprites[j])) {
-                    const [finalA, finalB] = resolveCollision(spriteInfoA, spriteInfoB)
-                    spriteInfoA.vel = [finalA.x, finalA.y]
-                    spriteInfoB.vel = [finalB.x, finalB.y]
-
-                }
-            }
-        }
-    }
+    // document.body.appendChild(renderer.domElement)
     
     function updateSprites() {
         for (let i = 0; i < info.length; i++) {
             const spriteInfo = info[i]
             const sprite = sprites[i]
-            if (sprite.position.x - PARTCILE_RADIUS < bounds.left || sprite.position.x + PARTCILE_RADIUS > bounds.right) {
-                spriteInfo.vel[0] *= -1
-            }
-
-            if (sprite.position.y - PARTCILE_RADIUS < bounds.bottom || sprite.position.y + PARTCILE_RADIUS > bounds.top) {
-                spriteInfo.vel[1] *= -1
-            }
-
             const time = clock.getElapsedTime()
             const [dx, dy] = spriteInfo.updatePosition(time)
+            // console.log(dx, dy)
             sprite.translateX(dx)
             sprite.translateY(dy)
             spriteInfo.pos = new THREE.Vector2(sprite.position.x, sprite.position.y)
+            if (sprite.position.y + PARTCILE_RADIUS < bounds.bottom) { 
+                sprite.position.y = bounds.top + spriteInfo.radius
+                continue
+            }
+
+            if (sprite.position.y - PARTCILE_RADIUS > bounds.top) {
+                sprite.position.y = bounds.bottom - spriteInfo.radius
+                continue
+            }
+
         }
+
     }
 
     function animate() {
-        findCollisions()
-        updateSprites()
-        renderer.render(scene, camera)
-    }
+            updateSprites()
+            renderer.render(scene, camera)
+        }
 
     renderer.setAnimationLoop(animate)
 
@@ -190,25 +166,121 @@ function checkCollision(spriteA, spriteB) {
     return hero_container
 }
 
+gsap.registerPlugin(ScrollTrigger)
+
+function HTMLCollectionToArr(collection) {
+    return [].slice.call(collection)
+}
+
+function animateScroll(elements) {
+    console.log(elements)
+
+    const leaveFunc = (element) => {
+        gsap.fromTo(element, {
+            autoAlpha: 1,
+        }, 
+        {
+            autoAlpha: 0,
+            overwrite: "auto"
+        })
+    }
+
+    elements.forEach(element => {
+        ScrollTrigger.create({
+            trigger: element,
+            start: "top 80%",
+            end: "bottom 20%",
+            // markers: true,
+            // fastScrollEnd: true,
+            // pin: true,
+            // scrub: true,
+            onEnter: () => {
+                gsap.fromTo(element, {
+                    autoAlpha: 0,
+                    y: 100
+                }, 
+                {
+                    duration: 1.5,
+                    autoAlpha: 1,
+                    ease: "back",
+                    y: 0,
+                    overwrite: "auto"
+
+                })
+            },
+            onEnterBack: () => {
+                gsap.fromTo(element, {
+                    autoAlpha: 0,
+                    y: -100
+                }, 
+
+                {
+                    duration: 1.5,
+                    autoAlpha: 1,
+                    ease: "back",
+                    y: 0,
+                    overwrite: "auto"
+                })
+            },
+            onLeave: () => {
+                gsap.fromTo(element, {
+                    autoAlpha: 1,
+                }, 
+                {
+                    autoAlpha: 0,
+                    overwrite: "auto"
+                })        
+            },
+            onLeaveBack: () => {
+                gsap.fromTo(element, {
+                    autoAlpha: 1,
+                }, 
+                {
+                    autoAlpha: 0,
+                    overwrite: "auto"
+                })        
+            },
+        })
+    })
+}
+
 function portfolioSection() {
-    const portfolio_grid = document.createElement("section")
-    portfolio_grid.id = "portfolio"
+    const portfolio_header = document.createElement("h1")
+    portfolio_header.classList.add("section-header")
+    portfolio_header.textContent = "My Work"
+
+    const animation_container = document.createElement("div")
+    animation_container.classList.add("animation-container")
+
+    const portfolio_section = document.createElement("section")
+    portfolio_section.id = "portfolio"
+
+    const portfolio_grid = document.createElement("div")
+    portfolio_grid.classList.add("port-projects")
+
 
     const getPortfolioEntry = (proj_name, desc, img) => {
         const project_container = document.createElement("div")
+        project_container.classList.add("proj-container")
         const project_img = document.createElement("img")
+        project_img.classList.add("proj-img")
         project_img.src = img
 
+        const project_info_container = document.createElement("div")
+        project_info_container.classList.add("proj-info-container")
         const project_name = document.createElement("p")
+        project_name.classList.add("proj-name")
         project_name.textContent = proj_name
 
         const project_desc = document.createElement("p")
         project_desc.textContent = desc
 
         project_container.appendChild(project_img)
-        project_container.appendChild(project_name)
-        project_container.appendChild(project_desc)
+        project_info_container.appendChild(project_name)
+        project_info_container.appendChild(project_desc)
+        project_container.appendChild(project_info_container)
 
+        
         return project_container
     }
 
@@ -228,8 +300,84 @@ function portfolioSection() {
     for (let i = 0; i < names.length; i++)
         portfolio_grid.appendChild(getPortfolioEntry(names[i], descriptions[i], imgs[i]))
 
-    return portfolio_grid
+    // const elements = [portfolio_header, portfolio_grid]
+    // animateScroll(elements)
+
+    const elements = [animation_container]
+    animateScroll(elements)
+
+    animation_container.appendChild(portfolio_header)
+    animation_container.appendChild(portfolio_grid)
+
+    portfolio_section.appendChild(animation_container)
+
+
+    return portfolio_section
 }
+
+function contactSection() {
+    const ContactContainer = (textElement) => {
+        const container = document.createElement("div")
+        container.appendChild(textElement)
+        container.classList.add("contact-container")
+        return container
+    }
+    const section = document.createElement("section")
+    section.id = "about"
+
+    const info_container = document.createElement("div")
+    info_container.classList.add("info-container")
+    
+    //header
+    const header = document.createElement("h2")
+    header.textContent = "Contact Me"
+
+    const subtitle = document.createElement("h3")
+    subtitle.textContent = "Please get in touch if you think our work could be mutually beneficial!"
+    //email
+    const email = document.createElement("p")
+    email.textContent = "test@example.com"
+    const emailContainer = ContactContainer(email)
+    AppendSVGDOM(inbox_icon, emailContainer, "mailto:email@example.com")
+
+    //phone
+    const phone = document.createElement("p")
+    phone.textContent = "123-123-1234"
+    const phoneContainer = ContactContainer(phone)
+    AppendSVGDOM(phone_icon, phoneContainer, "")
+
+    //addr
+    const addr = document.createElement("p")
+    addr.textContent = "123 Please Contact Me"
+    const addrContainer = ContactContainer(addr)
+    AppendSVGDOM(addr_icon, addrContainer, "")
+
+    //icons?
+    info_container.appendChild(header)
+    info_container.appendChild(subtitle)
+    // info_container.appendChild(addr)
+    // info_container.appendChild(email)
+    // info_container.appendChild(phone)
+
+    info_container.appendChild(addrContainer)
+    info_container.appendChild(emailContainer)
+    info_container.appendChild(phoneContainer)
+
+    const contact_img = document.createElement("img")
+    contact_img.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.anime-planet.com%2Fcharacters%2Fprimary%2Fmisaki-nakahara-1-190x266.jpg%3Ft%3D1625965267&f=1&nofb=1&ipt=693022fbf00a5a041a3dde4bb127bbb76dd66992d32bb79ed9c6fd4c6acaa750"
+
+    section.appendChild(info_container)
+    section.appendChild(contact_img)
+
+    const elements = [info_container]
+
+    // animateScroll(elements)
+
+    return section
+}
+
+const section_container = document.createElement("div")
+section_container.classList.add("sections")
 
 const hero = heroSection()
 document.body.appendChild(hero)
@@ -239,11 +387,17 @@ about.id = "about"
 
 const port = portfolioSection()
 
-const contact = document.createElement("section")
+const contact = contactSection()
 contact.id = "contact"
 
-const sections = [hero, about, port, contact, ]
+// const sections = [hero, about, port, contact, ]
+const sections = [hero, port, contact]
 
+// animateScroll(sections)
+
+// sections.forEach(section => section_container.appendChild(section))
 sections.forEach(section => document.body.appendChild(section))
 
-document.body.appendChild(nav)
+// document.body.appendChild(section_container)
+
+// document.body.appendChild(nav)
