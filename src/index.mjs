@@ -258,13 +258,45 @@ function portfolioSection() {
     const portfolio_grid = document.createElement("div")
     portfolio_grid.classList.add("port-projects")
 
+    const asyncAppendSVGDOM = async (url, href) => {
+        let resp = await fetch(url)
+        resp = await resp.text()
+        console.log(resp)
+            const parser = new DOMParser()
+            const svg = parser.parseFromString(resp, "text/html").body.firstElementChild
+            svg.classList.add("icon")
 
-    const getPortfolioEntry = (proj_name, desc, img) => {
+            // if (href !== null && href !== undefined) {
+            //     const link = document.createElement("a")
+            //     link.href = href
+            //     link.appendChild(svg)
+            //     return link
+            // }
+
+
+            return svg
+    }
+
+    const getPortfolioEntry = async (proj_name, desc, img) => {
         const project_container = document.createElement("div")
         project_container.classList.add("proj-container")
         const project_img = document.createElement("img")
         project_img.classList.add("proj-img")
         project_img.src = img
+
+
+        const btn = document.createElement("button")
+        const btn_text = document.createElement("p")
+        btn_text.textContent = "See Project"
+        btn.appendChild(btn_text)
+        // const label = document.createElement("p")
+        // label.textContent = "Check it out"
+
+        const svg = await asyncAppendSVGDOM(github_icon, "")
+        console.log(svg)
+
+        btn.appendChild(svg)
+
 
         const project_info_container = document.createElement("div")
         project_info_container.classList.add("proj-info-container")
@@ -272,12 +304,15 @@ function portfolioSection() {
         project_name.classList.add("proj-name")
         project_name.textContent = proj_name
 
+
         const project_desc = document.createElement("p")
+        project_desc.classList.add("proj-desc")
         project_desc.textContent = desc
 
         project_container.appendChild(project_img)
         project_info_container.appendChild(project_name)
         project_info_container.appendChild(project_desc)
+        project_info_container.appendChild(btn)
         project_container.appendChild(project_info_container)
 
         
@@ -298,7 +333,8 @@ function portfolioSection() {
     ]
 
     for (let i = 0; i < names.length; i++)
-        portfolio_grid.appendChild(getPortfolioEntry(names[i], descriptions[i], imgs[i]))
+        // portfolio_grid.appendChild(getPortfolioEntry(names[i], descriptions[i], imgs[i]).then(entry => portfolio_grid.appendChild(entry)))
+        getPortfolioEntry(names[i], descriptions[i], imgs[i]).then(entry => portfolio_grid.appendChild(entry))
 
     // const elements = [portfolio_header, portfolio_grid]
     // animateScroll(elements)
@@ -322,6 +358,7 @@ function contactSection() {
         container.classList.add("contact-container")
         return container
     }
+
     const section = document.createElement("section")
     section.id = "about"
 
